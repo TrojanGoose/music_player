@@ -1,8 +1,12 @@
+// ignore_for_file: unused_element
+
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:rxdart/rxdart.dart' as rxdart;
 
 import '../models/song_model.dart';
+import '../widgets/player_buttons.dart';
 import '../widgets/seekbar.dart';
 
 class SongScreen extends StatefulWidget {
@@ -14,7 +18,7 @@ class SongScreen extends StatefulWidget {
 
 class _SongScreenState extends State<SongScreen> {
   AudioPlayer audioPlayer = AudioPlayer();
-  Song song = Song.songs[0];
+  Song song = Get.arguments ?? Song.songs[0];
 
   @override
   void initState() {
@@ -25,6 +29,9 @@ class _SongScreenState extends State<SongScreen> {
         children: [
           AudioSource.uri(
             Uri.parse('asset:///${song.url}'),
+          ),
+          AudioSource.uri(
+            Uri.parse('asset:///${Song.songs[1].url}'),
           ),
         ],
       ),
@@ -64,7 +71,9 @@ class _SongScreenState extends State<SongScreen> {
           ),
           const _BackgroundFilter(),
           _MusicPlayer(
-              seekBarDataStream: _seekBarDataStream, audioPlayer: audioPlayer),
+              song: song,
+              seekBarDataStream: _seekBarDataStream,
+              audioPlayer: audioPlayer),
         ],
       ),
     );
@@ -74,10 +83,12 @@ class _SongScreenState extends State<SongScreen> {
 class _MusicPlayer extends StatelessWidget {
   const _MusicPlayer({
     super.key,
+    required this.song,
     required Stream<SeekBarData> seekBarDataStream,
     required this.audioPlayer,
   }) : _seekBarDataStream = seekBarDataStream;
 
+  final Song song;
   final Stream<SeekBarData> _seekBarDataStream;
   final AudioPlayer audioPlayer;
 
@@ -86,12 +97,29 @@ class _MusicPlayer extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(
         horizontal: 20.0,
-        vertical: 40.0,
+        vertical: 50.0,
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.end,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Text(
+            song.title,
+            style: Theme.of(context).textTheme.headlineSmall!.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+          ),
+          const SizedBox(
+            height: 10,
+          ),
+          Text(
+            song.description,
+            maxLines: 2,
+          ),
+          const SizedBox(
+            height: 30,
+          ),
           StreamBuilder<SeekBarData>(
             stream: _seekBarDataStream,
             builder: (context, snapshot) {
@@ -103,76 +131,31 @@ class _MusicPlayer extends StatelessWidget {
               );
             },
           ),
-          PlayerButtons(audioPlayer: audioPlayer)
+          PlayerButtons(audioPlayer: audioPlayer),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              IconButton(
+                onPressed: () {},
+                icon: const Icon(
+                  Icons.settings,
+                  color: Colors.white,
+                ),
+                iconSize: 35,
+              ),
+              IconButton(
+                onPressed: () {},
+                iconSize: 35,
+                icon: const Icon(
+                  Icons.cloud_download,
+                  color: Colors.white,
+                ),
+              )
+            ],
+          )
         ],
       ),
-    );
-  }
-}
-
-class PlayerButtons extends StatelessWidget {
-  const PlayerButtons({
-    super.key,
-    required this.audioPlayer,
-  });
-
-  final AudioPlayer audioPlayer;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        StreamBuilder(
-            stream: audioPlayer.playerStateStream,
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                final playerState = snapshot.data;
-                final processingState = (playerState!).processingState;
-
-                if (processingState == ProcessingState.loading ||
-                    processingState == ProcessingState.buffering) {
-                  return Container(
-                    width: 64.0,
-                    height: 64.0,
-                    margin: const EdgeInsets.all(10.0),
-                    child: const CircularProgressIndicator(),
-                  );
-                } else if (!audioPlayer.playing) {
-                  return IconButton(
-                    onPressed: audioPlayer.play,
-                    iconSize: 75,
-                    icon: const Icon(
-                      Icons.play_circle,
-                      color: Colors.white,
-                    ),
-                  );
-                } else if (processingState != ProcessingState.completed) {
-                  return IconButton(
-                    onPressed: audioPlayer.pause,
-                    iconSize: 75,
-                    icon: const Icon(
-                      Icons.pause_circle,
-                      color: Colors.white,
-                    ),
-                  );
-                } else {
-                  return IconButton(
-                    onPressed: () => audioPlayer.seek(
-                      Duration.zero,
-                      index: audioPlayer.effectiveIndices!.first,
-                    ),
-                    iconSize: 75,
-                    icon: const Icon(
-                      Icons.replay_circle_filled_outlined,
-                      color: Colors.white,
-                    ),
-                  );
-                }
-              } else {
-                return const CircularProgressIndicator();
-              }
-            })
-      ],
     );
   }
 }

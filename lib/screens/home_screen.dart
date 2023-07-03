@@ -1,3 +1,5 @@
+// ignore_for_file: unused_element
+
 import 'package:flutter/material.dart';
 import 'package:music_playlist/models/playlist_model.dart';
 import 'package:music_playlist/models/song_model.dart';
@@ -28,25 +30,39 @@ class HomeScreen extends StatelessWidget {
             children: [
               const _DiscoverMusic(),
               _TrendingMusic(songs: songs),
-              Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Column(
-                  children: [
-                    const SectionHeader(title: 'Playlist'),
-                    ListView.builder(
-                        shrinkWrap: true,
-                        padding: const EdgeInsets.only(top: 20),
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: playlists.length,
-                        itemBuilder: ((context, index) {
-                          return PlaylistCard(playlists: playlists[index]);
-                        }))
-                  ],
-                ),
-              )
+              _PlaylistMusic(playlists: playlists)
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _PlaylistMusic extends StatelessWidget {
+  const _PlaylistMusic({
+    super.key,
+    required this.playlists,
+  });
+
+  final List<Playlist> playlists;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(20.0),
+      child: Column(
+        children: [
+          const SectionHeader(title: 'Playlist'),
+          ListView.builder(
+              shrinkWrap: true,
+              padding: const EdgeInsets.only(top: 20),
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: playlists.length,
+              itemBuilder: ((context, index) {
+                return PlaylistCard(playlists: playlists[index]);
+              }))
+        ],
       ),
     );
   }

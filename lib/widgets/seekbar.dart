@@ -67,7 +67,7 @@ class _SeekBaRState extends State<SeekBaR> {
               max: widget.duration.inMilliseconds.toDouble(),
               value: min(
                 _dragValue ?? widget.position.inMilliseconds.toDouble(),
-                widget.position.inMilliseconds.toDouble(),
+                widget.duration.inMilliseconds.toDouble(),
               ),
               onChanged: (value) {
                 setState(() {
